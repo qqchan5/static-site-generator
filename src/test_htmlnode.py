@@ -108,4 +108,4 @@ class TestParentNode(unittest.TestCase):
         self.assertEqual("ParentNode(p, [LeafNode(span, child, None)], {'href': 'a-link.com'})", repr(node))
 
 if __name__ == "__main__":
-    unittest.mail()
+    unittest.main()
