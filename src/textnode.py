@@ -65,3 +65,55 @@ def extract_markdown_images(text):
 
 def extract_markdown_links(text):
     return re.findall(r"(?<!!)\[(.*?)]\((.*?)\)", text)
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+        sections = re.split(r"!\[(.*?)]\((.*?)\)", node.text)
+        # if len(sections) % 2 == 0:
+        #     raise Exception("invalid markdown: unbalanced delimiters")
+        sec_counter = 0
+        for s in sections:
+            sec_counter += 1
+            match sec_counter:
+                case 1:
+                    if s == "":
+                        continue
+                    new_nodes.append(TextNode(s, TextType.TEXT))
+                case 2:
+                    alt = s
+                case 3:
+                    # if s == "":
+                    #     raise
+                    new_nodes.append(TextNode(alt, TextType.IMAGE, s))
+                    sec_counter = 0
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+        sections = re.split(r"(?<!!)\[(.*?)]\((.*?)\)", node.text)
+        # if len(sections) % 2 == 0:
+        #     raise Exception("invalid markdown: unbalanced delimiters")
+        sec_counter = 0
+        for s in sections:
+            sec_counter += 1
+            match sec_counter:
+                case 1:
+                    if s == "":
+                        continue
+                    new_nodes.append(TextNode(s, TextType.TEXT))
+                case 2:
+                    alt = s
+                case 3:
+                    # if s == "":
+                    #     raise
+                    new_nodes.append(TextNode(alt, TextType.LINK, s))
+                    sec_counter = 0
+    return new_nodes
