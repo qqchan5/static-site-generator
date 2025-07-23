@@ -92,6 +92,24 @@ def split_nodes_image(old_nodes):
                     sec_counter = 0
     return new_nodes
 
+def split_nodes_image2(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+        matches = extract_markdown_images(node.text)
+        string = node.text
+        for alt, url in matches:
+            split_string = string.split(f"![{alt}]({url})")
+            if split_string[0] != "":
+                new_nodes.append(TextNode(split_string[0], TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.IMAGE, url))
+            string = split_string[1]
+        if split_string[1] != "":
+            new_nodes.append(TextNode(split_string[1], TextType.TEXT))
+    return new_nodes
+
 def split_nodes_link(old_nodes):
     new_nodes = []
     for node in old_nodes:
@@ -117,3 +135,22 @@ def split_nodes_link(old_nodes):
                     new_nodes.append(TextNode(alt, TextType.LINK, s))
                     sec_counter = 0
     return new_nodes
+
+def split_nodes_link2(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+        matches = extract_markdown_links(node.text)
+        string = node.text
+        for alt, url in matches:
+            split_string = string.split(f"![{alt}]({url})")
+            if split_string[0] != "":
+                new_nodes.append(TextNode(split_string[0], TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.LINK, url))
+            string = split_string[1]
+        if split_string[1] != "":
+            new_nodes.append(TextNode(split_string[1], TextType.TEXT))
+    return new_nodes
+
