@@ -186,5 +186,53 @@ class TestSplitTextNodes(unittest.TestCase):
         with self.assertRaises(Exception):
             new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
 
+class TestExtractImages(unittest.TestCase):
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_double_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png). This is another text with an ![image2](https://i.imgur.com/sdWsdWa.png)"
+        )
+        self.assertListEqual(
+            [
+                ("image", "https://i.imgur.com/zjjcJKZ.png"),
+                ("image2", "https://i.imgur.com/sdWsdWa.png")
+            ], matches
+        )
+
+    def test_extract_markdown_images2(self):
+        matches = extract_markdown_images(
+            "This is text with an [link](https://youtube.com)"
+        )
+        self.assertListEqual([], matches)
+
+class TestExtractLinks(unittest.TestCase):
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with an [link](https://youtube.com)"
+        )
+        self.assertListEqual([("link", "https://youtube.com")], matches)
+
+    def test_extract_markdown_double_links(self):
+        matches = extract_markdown_links(
+            "This is text with an [link](https://youtube.com). This is another text with an [link2](https://duckduckdo.com)"
+        )
+        self.assertListEqual(
+            [
+                ("link", "https://youtube.com"),
+                ("link2", "https://duckduckdo.com")
+            ], matches
+        )
+
+    def test_extract_markdown_links2(self):
+        matches = extract_markdown_links(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([], matches)
+
 if __name__ == "__main__":
     unittest.main()
