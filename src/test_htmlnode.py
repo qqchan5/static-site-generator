@@ -1,7 +1,5 @@
-import unittest
-
 from htmlnode import *
-
+import unittest
 
 class TestHTMLNode(unittest.TestCase):
     def test_to_html(self):
