@@ -3,14 +3,15 @@ from markdown_blocks import markdown_to_html_node
 import os
 import shutil
 import re
+import sys
 
 LOG_FILE = ""
 static_dir = "static"
-public_dir = "public"
+public_dir = "docs"
 content_dir = "content"
 template_file = "template.html"
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as f:
         markdown = f.read()
@@ -20,18 +21,20 @@ def generate_page(from_path, template_path, dest_path):
     html_string = markdown_to_html_node(markdown).to_html()
     title = extract_title(markdown)
 
-    index = template.replace("{{ Title }}", title)
-    index = index.replace("{{ Content }}", html_string)
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html_string)
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
     with open(dest_path, 'w') as f:
-        f.write(index)
+        f.write(template)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     os.makedirs(dest_dir_path, exist_ok=True)
     for i_path in os.listdir(dir_path_content):
         if not os.path.isfile(f"{dir_path_content}/{i_path}"):
-            generate_pages_recursive(f"{dir_path_content}/{i_path}", template_path, f"{dest_dir_path}/{i_path}")
+            generate_pages_recursive(f"{dir_path_content}/{i_path}", template_path, f"{dest_dir_path}/{i_path}", basepath)
         elif re.search(r"\.md$", i_path):
-            generate_page(f"{dir_path_content}/{i_path}", template_path, f"{dest_dir_path}/{re.sub(r"md$", "html", i_path)}")
+            generate_page(f"{dir_path_content}/{i_path}", template_path, f"{dest_dir_path}/{re.sub(r"md$", "html", i_path)}", basepath)
 
 def extract_title(markdown):
     match = re.search(r"^# (.*)", markdown)
@@ -54,10 +57,15 @@ def copy_dir(dir, log=None):
             copy_dir(i_path, log)
 
 def main():
+    basepath = '/'
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    print(sys.argv)
+
     if os.path.exists(public_dir):
         shutil.rmtree(public_dir)
     copy_dir(static_dir)
-    generate_pages_recursive(content_dir, template_file, public_dir)
+    generate_pages_recursive(content_dir, template_file, public_dir, basepath)
 
 if __name__ == "__main__":
     main()
